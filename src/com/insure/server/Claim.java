@@ -7,7 +7,7 @@ public class Claim {
 	private final AtomicInteger uuid;
 	private String description;
 	private HashMap<Integer, Document> documents;
-	private static int docId = 1;
+	private int docId = 1;
 
 	public Claim (int id, String description) {
 		AtomicInteger aId = new AtomicInteger(id);

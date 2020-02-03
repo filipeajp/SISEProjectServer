@@ -11,11 +11,14 @@ public class Document {
 
 	// attributes: id, name, type description, timestamp
 	// timestamp = new Timestamp(System.currentTimeMillis());
+
 	public Document (int id, String name, String content) {
+		synchronized (timeStamp){
 		this.docId = id;
+		this.timeStamp = new Timestamp(System.currentTimeMillis());
+		}
 		this.name = name;
 		this.content = content;
-		this.timeStamp = new Timestamp(System.currentTimeMillis());
 	}
 
 	public int getDocId () {

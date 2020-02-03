@@ -39,19 +39,29 @@ public class ClaimDataStore {
 		claim.setDescription(description);
 	}
 
+	public int getNumberOfDocs(int claimId) throws ClaimNotFoundException {
+		Claim claim = this.getClaim(claimId);
+		return claim.getNumOfDocs();
+
+	}
+
 	//list/create/read/update/delete documents of claims on the datastore safely.
 	public String[] listDocuments (String userId, int claimId) throws ClaimNotFoundException {
 		Claim claim = this.getClaim(claimId);
 		HashMap<Integer, Document> docRepository = claim.getAllDocuments();
-		List<Document> docs = new LinkedList<Document>( docRepository.values());
+		/*List<Document> docs = new LinkedList<Document>( docRepository.values());
 		List<String> docString = new LinkedList<String>();
 
-			for (int i = 0; i <docs.size(); i++)
-				docString.add(docs.get(i).toString());
+		for (int i = 0; i <docs.size(); i++)
+			docString.add(docs.get(i).toString());
 
-			return (String[]) docString.toArray();
-			//System.out.prinetln(this.readDocument(userId, claimId, i));
-			//JOptionPane.showMssageDialog(null , this.readDocument(userId, claimId, i))
+		String[] output = (String[]) docString.toArray();
+
+		return output;*/
+		String[] docsArray = (String[]) new String[docRepository.size()];
+		for (int i = 0; i < docRepository.size(); i++)
+			docsArray[i] = this.readDocument(userId, claimId, i+1);
+		return docsArray;
 	}
 
 	public void createDocument (int claimId, String docName, String content, String userId, String privKeyFileName) throws Exception {
@@ -59,9 +69,10 @@ public class ClaimDataStore {
 		int docId = claim.addDocument(docName, content);
 		Document document = claim.getDocument(docId);
 		//we need to create a digital signature
-		Signature sign = new Signature();
-		sign.createSignature(privKeyFileName, document);
+		//Signature sign = new Signature();
+		//sign.createSignature(privKeyFileName, document);
 	}
+
 
 	public String readDocument (String userId, int claimId, int docId) throws ClaimNotFoundException {
 		// we need to validate the signature to see if the content of document was not changed (integrity)

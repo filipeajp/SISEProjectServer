@@ -16,15 +16,25 @@ public class Signature {
 		return Base64.getEncoder().encodeToString(digest.digest(document.toString().getBytes("UTF-8")));
 	}
 
+	private String encryptHash (String fileName, String hash) throws Exception {
+		AsymEncryptPriv cipher = new AsymEncryptPriv();
+		PrivateKey privKey = cipher.getPrivate(fileName);
+		return cipher.encryptText(hash, privKey);
+	}
+
+	private String decryptHash (String fileName, String encryptedHash) throws Exception {
+		AsymDecryptPub cipher = new AsymDecryptPub();
+		PublicKey pubKey = cipher.getPublic(fileName);
+		return cipher.decryptText(encryptedHash, pubKey);
+	}
+
 	// create hash(message) and encrypt hash
 	public String createSignature (String fileName, Document document) throws Exception {
 		//create hash
 		String hash = generateHash(document);
 
 		// encrypt hash
-		AsymEncryptPriv cipher = new AsymEncryptPriv();
-		PrivateKey privKey = cipher.getPrivate(fileName);
-		String encryptedHash = cipher.encryptText(hash, privKey);
+		String encryptedHash = encryptHash(fileName, hash);
 
 		return encryptedHash;
 
@@ -34,9 +44,7 @@ public class Signature {
 	// validate integrity and authenticity
 	public boolean validateSignature (String fileName, String encryptedHash, Document document) throws Exception {
 		// Decrypt encrypted hash
-		AsymDecryptPub cipher = new AsymDecryptPub();
-		PublicKey pubKey = cipher.getPublic(fileName);
-		String decryptedHash = cipher.decryptText(encryptedHash, pubKey);
+		String decryptedHash = decryptHash(fileName, encryptedHash);
 
 		// Create hash of document
 		String docHash = generateHash(document);
@@ -46,8 +54,6 @@ public class Signature {
 
 		return true;
 	}
-
-
 }
 
 
