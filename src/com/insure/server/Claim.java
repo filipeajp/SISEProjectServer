@@ -2,7 +2,7 @@ package com.insure.server;
 
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-
+//Obrigado Andree
 public class Claim {
 	private final AtomicInteger uuid;
 	private String description;
