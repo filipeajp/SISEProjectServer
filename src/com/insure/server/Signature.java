@@ -11,9 +11,9 @@ public class Signature {
 	public Signature () {
 	}
 
-	private String generateHash (Document document) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+	private String generateHash (String docContent) throws NoSuchAlgorithmException, UnsupportedEncodingException {
 		MessageDigest digest = MessageDigest.getInstance("SHA-256");
-		return Base64.getEncoder().encodeToString(digest.digest(document.toString().getBytes("UTF-8")));
+		return Base64.getEncoder().encodeToString(digest.digest(docContent.getBytes("UTF-8")));
 	}
 
 	private String encryptHash (String fileName, String hash) throws Exception {
@@ -29,9 +29,9 @@ public class Signature {
 	}
 
 	// create hash(message) and encrypt hash
-	public String createSignature (String fileName, Document document) throws Exception {
+	public String createSignature (String fileName, String docContent) throws Exception {
 		//create hash
-		String hash = generateHash(document);
+		String hash = generateHash(docContent);
 
 		// encrypt hash
 		String encryptedHash = encryptHash(fileName, hash);
@@ -42,12 +42,12 @@ public class Signature {
 
 	//decrypt hash and compare hash obtained from the message
 	// validate integrity and authenticity
-	public boolean validateSignature (String fileName, String encryptedHash, Document document) throws Exception {
+	public boolean validateSignature (String fileName, String encryptedHash, String docContent) throws Exception {
 		// Decrypt encrypted hash
 		String decryptedHash = decryptHash(fileName, encryptedHash);
 
 		// Create hash of document
-		String docHash = generateHash(document);
+		String docHash = generateHash(docContent);
 
 		// Validate
 		if (!docHash.equals(decryptedHash)) return false;

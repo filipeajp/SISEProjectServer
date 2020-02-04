@@ -32,8 +32,8 @@ public class Claim {
 		return "{ID:" + this.uuid + ", Description:" + this.description + "}\n";
 	}
 
-	public int addDocument (String name, String description) {
-		Document document = new Document(this.docId, name, description);
+	public int addDocument (String name, String description, String signature) {
+		Document document = new Document(this.docId, name, description, signature);
 		this.documents.put(this.docId++, document);
 		return document.getDocId();
 	}

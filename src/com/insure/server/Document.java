@@ -6,19 +6,21 @@ public class Document {
 	private final int docId;
 	private String name;
 	private String content;
-	private Timestamp timeStamp;
+	private String signature;
+	private Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
 
 	// attributes: id, name, type description, timestamp
 	// timestamp = new Timestamp(System.currentTimeMillis());
 
-	public Document (int id, String name, String content) {
-		synchronized (timeStamp){
+	public Document (int id, String name, String content, String signature) {
 		this.docId = id;
-		this.timeStamp = new Timestamp(System.currentTimeMillis());
+		synchronized (this.timestamp){
+			this.timestamp = new Timestamp(System.currentTimeMillis());
 		}
 		this.name = name;
 		this.content = content;
+		this.signature = signature;
 	}
 
 	public int getDocId () {
@@ -33,16 +35,24 @@ public class Document {
 		return this.content;
 	}
 
-	public Timestamp getTimeStamp () {
-		return timeStamp;
+	public String getSignature(){
+		return this.signature;
+	}
+
+	public Timestamp getTimestamp () {
+		return timestamp;
 	}
 
 	public String toString () {
-		return "{DocID:" + this.docId + ", Name:" + this.name + ", Content:" + this.content + ", Timestamp" + this.timeStamp + "}\n";
+		return "{DocID:" + this.docId + ", Name:" + this.name + ", Content:" + this.content + ", Timestamp" + this.timestamp + "}\n";
 	}
 
 	public void setContent (String newContent) {
 		this.content = newContent;
+	}
+
+	public void setSignature(String newSignature){
+		this.signature = newSignature;
 	}
 
 

@@ -1,6 +1,8 @@
 package com.insure.server;
 
 import javax.jws.WebService;
+import javax.swing.*;
+import java.lang.annotation.Documented;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,6 +34,11 @@ public class ClaimDataStore {
 		return this.claimDataStore.get(id);
 	}
 
+	public String retrieveClaim(int claimId) throws ClaimNotFoundException {
+		Claim claim = getClaim(claimId);
+		return claim.toString();
+	}
+
 	// retrieve a printed claim and his associated documents
 
 	public void updateClaim (int claimId, String description) throws ClaimNotFoundException {
@@ -59,26 +66,35 @@ public class ClaimDataStore {
 
 		return output;*/
 		String[] docsArray = (String[]) new String[docRepository.size()];
-		for (int i = 0; i < docRepository.size(); i++)
-			docsArray[i] = this.readDocument(userId, claimId, i+1);
+		for (int i = 0; i < docRepository.size(); i++) {
+			docsArray[i] = this.readDocument(userId, claimId, i + 1);
+		}
 		return docsArray;
 	}
 
-	public void createDocument (int claimId, String docName, String content, String userId, String privKeyFileName) throws Exception {
-		Claim claim = this.getClaim(claimId);
-		int docId = claim.addDocument(docName, content);
-		Document document = claim.getDocument(docId);
-		//we need to create a digital signature
-		//Signature sign = new Signature();
-		//sign.createSignature(privKeyFileName, document);
-	}
+	public boolean createDocument (int claimId, String docName, String docContent, String userId, String encryptedHash) throws Exception {
+		Signature sign = new Signature();
+		boolean validation = sign.validateSignature("publicKeys\\" + "user" + userId + "PublicKey", encryptedHash, docContent);
 
+		if(validation){
+			Claim claim = this.getClaim(claimId);
+			int docId = claim.addDocument(docName, docContent, encryptedHash);
+		}
+
+		return validation;
+	}
 
 	public String readDocument (String userId, int claimId, int docId) throws ClaimNotFoundException {
 		// we need to validate the signature to see if the content of document was not changed (integrity)
 		Claim claim = this.getClaim(claimId);
 		Document document = claim.getDocument(docId);
 		return document.toString();
+	}
+
+	public Document getDocument (int claimId, int docId) throws ClaimNotFoundException {
+		Claim claim = getClaim(claimId);
+		Document document = claim.getDocument(docId);
+		return document;
 	}
 
 	public void updateDocument (String userId, int claimId, int docId, String newContent) throws ClaimNotFoundException {
