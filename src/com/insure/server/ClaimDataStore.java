@@ -21,8 +21,8 @@ public class ClaimDataStore {
 	}
 
 	//create/get/update claims
-	public int createClaim (String description) {
-		Claim claim = new Claim(this.uuid.getAndIncrement(), description);
+	public int createClaim (String description, int userId) {
+		Claim claim = new Claim(this.uuid.getAndIncrement(), description, userId);
 		this.claimDataStore.putIfAbsent(claim.getUuid(), claim);
 		return claim.getUuid();
 	}
@@ -32,6 +32,11 @@ public class ClaimDataStore {
 			throw new ClaimNotFoundException("There is no such claim with the id: " + id);
 	}
 		return this.claimDataStore.get(id);
+	}
+
+	public int getClaimUser(int claimId) throws ClaimNotFoundException {
+		Claim claim = getClaim(claimId);
+		return claim.getUserId();
 	}
 
 	public String retrieveClaim(int claimId) throws ClaimNotFoundException {
@@ -53,21 +58,14 @@ public class ClaimDataStore {
 	}
 
 	//list/create/read/update/delete documents of claims on the datastore safely.
-	public String[] listDocuments (String userId, int claimId) throws ClaimNotFoundException {
+	public String[] listDocuments (int claimId) throws ClaimNotFoundException {
 		Claim claim = this.getClaim(claimId);
 		HashMap<Integer, Document> docRepository = claim.getAllDocuments();
-		/*List<Document> docs = new LinkedList<Document>( docRepository.values());
-		List<String> docString = new LinkedList<String>();
 
-		for (int i = 0; i <docs.size(); i++)
-			docString.add(docs.get(i).toString());
-
-		String[] output = (String[]) docString.toArray();
-
-		return output;*/
 		String[] docsArray = (String[]) new String[docRepository.size()];
+
 		for (int i = 0; i < docRepository.size(); i++) {
-			docsArray[i] = this.readDocument(userId, claimId, i + 1);
+			docsArray[i] = this.readDocument(claimId, i + 1);
 		}
 		return docsArray;
 	}
@@ -84,7 +82,7 @@ public class ClaimDataStore {
 		return validation;
 	}
 
-	public String readDocument (String userId, int claimId, int docId) throws ClaimNotFoundException {
+	public String readDocument (int claimId, int docId) throws ClaimNotFoundException {
 		// we need to validate the signature to see if the content of document was not changed (integrity)
 		Claim claim = this.getClaim(claimId);
 		Document document = claim.getDocument(docId);

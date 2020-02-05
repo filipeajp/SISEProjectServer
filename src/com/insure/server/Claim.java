@@ -8,12 +8,15 @@ public class Claim {
 	private String description;
 	private HashMap<Integer, Document> documents;
 	private int docId = 1;
+	private int userId;
 
-	public Claim (int id, String description) {
+	public Claim (int id, String description, int userId) {
 		AtomicInteger aId = new AtomicInteger(id);
+		this.userId = userId;
 		this.uuid = aId;
 		this.description = description;
 		this.documents = new HashMap<Integer, Document>();
+
 	}
 
 	public int getUuid () {
@@ -22,6 +25,10 @@ public class Claim {
 
 	public String getDescription () {
 		return this.description;
+	}
+
+	public int getUserId(){
+		return this.userId;
 	}
 
 	public synchronized void setDescription (String description) {
