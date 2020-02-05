@@ -2,7 +2,7 @@ package com.insure.server;
 
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-//Obrigado Andree
+
 public class Claim {
 	private final AtomicInteger uuid;
 	private String description;
@@ -45,7 +45,9 @@ public class Claim {
 		return document.getDocId();
 	}
 
-	public Document getDocument (int docId) {
+	public Document getDocument (int docId) throws DocumentNotFoundException {
+		if(!this.documents.containsKey(docId))
+			throw new DocumentNotFoundException("There is no such document with the ID: " + docId);
 		Document document = this.documents.get(docId);
 		return document;
 	}

@@ -58,7 +58,7 @@ public class ClaimDataStore {
 	}
 
 	//list/create/read/update/delete documents of claims on the datastore safely.
-	public String[] listDocuments (int claimId) throws ClaimNotFoundException {
+	public String[] listDocuments (int claimId) throws ClaimNotFoundException, DocumentNotFoundException {
 		Claim claim = this.getClaim(claimId);
 		HashMap<Integer, Document> docRepository = claim.getAllDocuments();
 
@@ -82,14 +82,15 @@ public class ClaimDataStore {
 		return validation;
 	}
 
-	public String readDocument (int claimId, int docId) throws ClaimNotFoundException {
+	public String readDocument (int claimId, int docId) throws ClaimNotFoundException, DocumentNotFoundException {
 		// we need to validate the signature to see if the content of document was not changed (integrity)
 		Claim claim = this.getClaim(claimId);
 		Document document = claim.getDocument(docId);
+
 		return document.toString();
 	}
 
-	public Document getDocument (int claimId, int docId) throws ClaimNotFoundException {
+	public Document getDocument (int claimId, int docId) throws ClaimNotFoundException, DocumentNotFoundException {
 		Claim claim = getClaim(claimId);
 		Document document = claim.getDocument(docId);
 		return document;
