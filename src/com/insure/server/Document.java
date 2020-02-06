@@ -2,6 +2,12 @@ package com.insure.server;
 
 import java.sql.Timestamp;
 
+/*
+The class Document will allow the creation of objects of this type. The documents will interact
+directly with the claims of each user. This class is accessed by other classes (namely the class
+ClaimDataStore, where the creation of documents and respective association with claims is executed).
+*/
+
 public class Document {
 	private final int docId;
 	private final int ownerId;

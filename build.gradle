@@ -6,7 +6,7 @@ apply plugin: 'idea'
 sourceCompatibility = 1.8
 version = '1.0'
 
-mainClassName = 'cs.insure.server.Main'
+mainClassName = 'com.insure.server.Main'
 
 repositories {
     //mavenCentral()
@@ -29,12 +29,11 @@ dependencies {
 }
 
 
-
 jar {
     manifest {
         attributes(
                 'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
-                'Main-Class': 'cs.insure.server.Main',
+                'Main-Class': 'com.insure.server.Main',
                 'Implementation-Title': 'Insure Web Service',
                 'Implementation-Version': version
         )

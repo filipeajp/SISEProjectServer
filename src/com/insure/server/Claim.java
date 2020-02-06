@@ -3,6 +3,13 @@ package com.insure.server;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/*
+The class Claim will allow the creation of objects of this type. Claims are then created in the ClaimDataStore class
+that have access to this class. This class includes methods that add documents to a data structure, where all documents
+are listed.
+*/
+
+
 public class Claim {
 	private final int uuid;
 	private String description;

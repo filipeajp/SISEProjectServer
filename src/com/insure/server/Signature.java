@@ -7,6 +7,14 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Base64;
 
+/*
+The class Signature allows the creation of a document signature. This class allows the
+creation of a signature by creating a hash that will be encrypted and its validation (matching
+the decrypted hash). The method createSignature receives a document content, for which generates a hash.
+It also encrypts it by using the PrivateKey. This method is only used on the Client's side. This class uses
+the classes AsymEncryptPriv and AsymDecryptPub to encrypt the hash related to the document content.
+*/
+
 public class Signature {
 	public Signature () {
 	}

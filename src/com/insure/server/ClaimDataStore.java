@@ -4,6 +4,17 @@ import javax.jws.WebService;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+
+/*
+The class ClaimDataStore defines the data store structure that holds the claims created and all the related methods
+to it. The methods will allow the creation of a new claim (that will be saved in the data structure), getting
+the claim, (by searching for it in the data structure, using the claim id), retrieve the claim (retrieves
+the claim in the string format) and update claim (allowing to set a new description for the claim).
+Since documents are directly related to claims, the methods to list, create, read, get, update, delete and
+get number of documents are included in this class.
+*/
+
+
 //define a datastore
 @WebService
 public class ClaimDataStore {
@@ -116,8 +127,15 @@ public class ClaimDataStore {
 		if (claim.getNumOfDocs() == 0)
 			throw new DocumentNotFoundException("Claim " + claimId + " does not have associated documents.");
 
-		for (int i = 0; i < claim.getNumOfDocs(); i++)
-			docsArray[i] = "DocId: " + claim.getDocument(i + 1).getDocId() + ", Document Name: " + claim.getDocument(i + 1).getName() + "\n";
+		int j = 1;
+		int i = 0;
+		while (i < claim.getAllDocuments().size()) {
+			if (claim.getAllDocuments().containsKey(j)) {
+				docsArray[i] = "DocId: " + claim.getDocument(j).getDocId() + ", Document Name: " + claim.getDocument(j).getName() + "\n";
+				i++;
+			}
+			j++;
+		}
 
 		return docsArray;
 	}
