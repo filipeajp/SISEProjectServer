@@ -1,11 +1,6 @@
 package com.insure.server;
 
 import javax.jws.WebService;
-import javax.swing.*;
-import java.lang.annotation.Documented;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -20,6 +15,11 @@ public class ClaimDataStore {
 	public ClaimDataStore () {
 	}
 
+	private void userIdVerification (int userId, Claim claim) throws WrongUserIdException {
+		if (userId != claim.getUserId())
+			throw new WrongUserIdException("This claim belongs to another user!");
+	}
+
 	//create/get/update claims
 	public int createClaim (String description, int userId) {
 		Claim claim = new Claim(this.uuid.getAndIncrement(), description, userId);
@@ -29,62 +29,55 @@ public class ClaimDataStore {
 
 	public Claim getClaim (int id) throws ClaimNotFoundException {
 		if (!this.claimDataStore.containsKey(id)) {
-			throw new ClaimNotFoundException("There is no such claim with the id: " + id);
-	}
+			throw new ClaimNotFoundException("Claim " + id + " does not exist");
+		}
 		return this.claimDataStore.get(id);
 	}
 
-	public int getClaimUser(int claimId) throws ClaimNotFoundException {
+	public int getClaimUser (int claimId) throws ClaimNotFoundException {
 		Claim claim = getClaim(claimId);
 		return claim.getUserId();
 	}
 
-	public String retrieveClaim(int claimId) throws ClaimNotFoundException {
+	public String retrieveClaim (int claimId, int userId) throws ClaimNotFoundException, WrongUserIdException {
 		Claim claim = getClaim(claimId);
+
+		userIdVerification(userId, claim);
+
 		return claim.toString();
 	}
 
-	// retrieve a printed claim and his associated documents
-
-	public void updateClaim (int claimId, String description) throws ClaimNotFoundException {
+	public void updateClaim (int userId, int claimId, String description) throws ClaimNotFoundException, WrongUserIdException {
 		Claim claim = this.getClaim(claimId);
+
+		userIdVerification(userId, claim);
+
 		claim.setDescription(description);
 	}
 
-	public int getNumberOfDocs(int claimId) throws ClaimNotFoundException {
+	public int getNumberOfDocs (int claimId) throws ClaimNotFoundException {
 		Claim claim = this.getClaim(claimId);
 		return claim.getNumOfDocs();
 
 	}
 
 	//list/create/read/update/delete documents of claims on the datastore safely.
-	public String[] listDocuments (int claimId) throws ClaimNotFoundException, DocumentNotFoundException {
-		Claim claim = this.getClaim(claimId);
-		HashMap<Integer, Document> docRepository = claim.getAllDocuments();
-
-		String[] docsArray = (String[]) new String[docRepository.size()];
-
-		for (int i = 0; i < docRepository.size(); i++) {
-			docsArray[i] = this.readDocument(claimId, i + 1);
-		}
-		return docsArray;
-	}
-
-	public boolean createDocument (int claimId, String docName, String docContent, String userId, String encryptedHash) throws Exception {
+	public void createDocument (int claimId, String docName, String docContent, int userId, int ownerId, String encryptedHash) throws ClaimNotFoundException, WrongUserIdException, TamperedDocumentException, Exception {
 		Signature sign = new Signature();
-		boolean validation = sign.validateSignature("publicKeys\\" + "user" + userId + "PublicKey", encryptedHash, docContent);
 
-		if(validation){
-			Claim claim = this.getClaim(claimId);
-			int docId = claim.addDocument(docName, docContent, encryptedHash);
-		}
+		sign.validateSignature("publicKeys\\" + "user" + ownerId + "PublicKey", encryptedHash, docContent);
 
-		return validation;
+		Claim claim = this.getClaim(claimId);
+		userIdVerification(userId, claim);
+		claim.addDocument(ownerId, docName, docContent, encryptedHash);
 	}
 
-	public String readDocument (int claimId, int docId) throws ClaimNotFoundException, DocumentNotFoundException {
+	public String readDocument (int userId, int claimId, int docId) throws ClaimNotFoundException, DocumentNotFoundException, WrongUserIdException {
 		// we need to validate the signature to see if the content of document was not changed (integrity)
 		Claim claim = this.getClaim(claimId);
+
+		userIdVerification(userId, claim);
+
 		Document document = claim.getDocument(docId);
 
 		return document.toString();
@@ -96,16 +89,44 @@ public class ClaimDataStore {
 		return document;
 	}
 
-	public void updateDocument (String userId, int claimId, int docId, String newContent) throws ClaimNotFoundException {
+	public int getDocumentOwner (int claimId, int docId) throws ClaimNotFoundException, DocumentNotFoundException {
+		Claim claim = getClaim(claimId);
+		Document document = claim.getDocument(docId);
+
+		return document.getOwnerId();
+	}
+
+	public void updateDocument (int userId, int claimId, int docId, String newContent) throws ClaimNotFoundException, DocumentNotFoundException, WrongUserIdException {
 		Claim claim = this.getClaim(claimId);
+		userIdVerification(userId, claim);
 		claim.updateDocument(docId, newContent);
 	}
 
-	public void deleteDocument (String userId, int claimId, int docId) throws ClaimNotFoundException {
+	public void deleteDocument (int userId, int claimId, int docId) throws ClaimNotFoundException, DocumentNotFoundException, WrongUserIdException {
 		Claim claim = this.getClaim(claimId);
+		userIdVerification(userId, claim);
 		claim.deleteDocument(docId);
 	}
 
+	public String[] listDocuments (int userId, int claimId) throws ClaimNotFoundException, DocumentNotFoundException, WrongUserIdException {
+		Claim claim = this.getClaim(claimId);
+
+		String[] docsArray = (String[]) new String[claim.getNumOfDocs()];
+
+		if (claim.getNumOfDocs() == 0)
+			throw new DocumentNotFoundException("Claim " + claimId + " does not have associated documents.");
+
+		for (int i = 0; i < claim.getNumOfDocs(); i++)
+			docsArray[i] = "DocId: " + claim.getDocument(i + 1).getDocId() + ", Document Name: " + claim.getDocument(i + 1).getName() + "\n";
+
+		return docsArray;
+	}
+
+	// simulate an illegal document tampering, any user can simulate this
+	public void simulateTampering (int claimId, int docId, String docContent) throws DocumentNotFoundException, ClaimNotFoundException, TamperedDocumentException, Exception {
+		Document document = this.getDocument(claimId, docId);
+		document.setContent(docContent);
+	}
 }
 
 

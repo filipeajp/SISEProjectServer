@@ -1,33 +1,32 @@
 package com.insure.server;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Claim {
-	private final AtomicInteger uuid;
+	private final int uuid;
 	private String description;
-	private HashMap<Integer, Document> documents;
-	private int docId = 1;
-	private int userId;
+	private ConcurrentHashMap<Integer, Document> documents;
+	private AtomicInteger docId = new AtomicInteger(1);
+	private final int userId;
 
 	public Claim (int id, String description, int userId) {
-		AtomicInteger aId = new AtomicInteger(id);
 		this.userId = userId;
-		this.uuid = aId;
+		this.uuid = id;
 		this.description = description;
-		this.documents = new HashMap<Integer, Document>();
+		this.documents = new ConcurrentHashMap<Integer, Document>();
 
 	}
 
 	public int getUuid () {
-		return this.uuid.get();
+		return this.uuid;
 	}
 
 	public String getDescription () {
 		return this.description;
 	}
 
-	public int getUserId(){
+	public int getUserId () {
 		return this.userId;
 	}
 
@@ -36,23 +35,23 @@ public class Claim {
 	}
 
 	public String toString () {
-		return "{ID:" + this.uuid + ", Description:" + this.description + "}\n";
+		return "{UserID:" + this.userId + ", ClaimID:" + this.uuid + ", Description:" + this.description + "}\n";
 	}
 
-	public int addDocument (String name, String description, String signature) {
-		Document document = new Document(this.docId, name, description, signature);
-		this.documents.put(this.docId++, document);
+	public int addDocument (int ownerId, String name, String description, String signature) {
+		Document document = new Document(ownerId, this.docId.get(), name, description, signature);
+		this.documents.put(this.docId.getAndIncrement(), document);
 		return document.getDocId();
 	}
 
 	public Document getDocument (int docId) throws DocumentNotFoundException {
-		if(!this.documents.containsKey(docId))
-			throw new DocumentNotFoundException("There is no such document with the ID: " + docId);
+		if (!this.documents.containsKey(docId))
+			throw new DocumentNotFoundException("Document " + docId + " does not exist.");
 		Document document = this.documents.get(docId);
 		return document;
 	}
 
-	public HashMap<Integer, Document> getAllDocuments(){
+	public ConcurrentHashMap<Integer, Document> getAllDocuments () {
 		return this.documents;
 	}
 
@@ -60,11 +59,15 @@ public class Claim {
 		return this.documents.size();
 	}
 
-	public void deleteDocument (int docId) {
+	public void deleteDocument (int docId) throws DocumentNotFoundException {
+		if (!this.documents.containsKey(docId))
+			throw new DocumentNotFoundException("Document " + docId + " does not exist.");
 		this.documents.remove(docId);
 	}
 
-	public void updateDocument (int docId, String newContent) {
+	public void updateDocument (int docId, String newContent) throws DocumentNotFoundException {
+		if (!this.documents.containsKey(docId))
+			throw new DocumentNotFoundException("Document " + docId + " does not exist.");
 		this.documents.get(docId).setContent(newContent);
 	}
 }

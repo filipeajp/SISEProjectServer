@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 
 public class Document {
 	private final int docId;
+	private final int ownerId;
 	private String name;
 	private String content;
 	private String signature;
@@ -13,14 +14,17 @@ public class Document {
 	// attributes: id, name, type description, timestamp
 	// timestamp = new Timestamp(System.currentTimeMillis());
 
-	public Document (int id, String name, String content, String signature) {
+	public Document (int ownerId, int id, String name, String content, String signature) {
+		this.ownerId = ownerId;
 		this.docId = id;
-		synchronized (this.timestamp){
-			this.timestamp = new Timestamp(System.currentTimeMillis());
-		}
+		this.timestamp = new Timestamp(System.currentTimeMillis());
 		this.name = name;
 		this.content = content;
 		this.signature = signature;
+	}
+
+	public int getOwnerId () {
+		return this.ownerId;
 	}
 
 	public int getDocId () {
@@ -35,7 +39,7 @@ public class Document {
 		return this.content;
 	}
 
-	public String getSignature(){
+	public String getSignature () {
 		return this.signature;
 	}
 
@@ -51,7 +55,7 @@ public class Document {
 		this.content = newContent;
 	}
 
-	public void setSignature(String newSignature){
+	public void setSignature (String newSignature) {
 		this.signature = newSignature;
 	}
 
